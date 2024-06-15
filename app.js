@@ -1,206 +1,207 @@
-function gameController() {
-    player1 = createPlayer('Sally', 'X', false);
-    player2 = createPlayer('Adam', 'O', true, "MEDIUM");
+const cells = document.querySelectorAll('[data-cell]');
+const board = document.getElementById('board');
+const messageElement = document.getElementById('message');
+const restartButton = document.getElementById('restartButton');
+const difficultySelect = document.getElementById('difficulty');
+const modeSelect = document.getElementById('mode');
+const difficultyLabel = document.getElementById('difficultyLabel');
+let currentPlayer = 'X';
+let gameIsActive = true;
+let boardState = Array(9).fill(null);
+let singlePlayer = true;
 
-    let playerPlay = player1;
+const winningCombinations = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+];
 
-    let board = function () {
-        const row = 3;
-        const col = 3;
+startGame();
 
-        let verticleXCheckCounter = [0, 0, 0];
-        let verticleOCheckCounter = [0, 0, 0];
-        let horizontalXCheckCounter = [0, 0, 0];
-        let horizontalOCheckCounter = [0, 0, 0];
-        let diagonalXCheckCounter = [0, 0];
-        let diagonalOCheckCounter = [0, 0];
+restartButton.addEventListener('click', startGame);
+modeSelect.addEventListener('change', changeMode);
 
-        let markedCellCount = 0;
+function startGame() {
+    currentPlayer = 'X';
+    gameIsActive = true;
+    boardState = Array(9).fill(null);
+    cells.forEach(cell => {
+        cell.classList.remove('X');
+        cell.classList.remove('O');
+        cell.textContent = '';
+        cell.addEventListener('click', handleClick, { once: true });
+    });
+    setMessage(`Player ${currentPlayer}'s turn`);
+    singlePlayer = modeSelect.value === 'single';
+    difficultySelect.style.display = singlePlayer ? 'inline-block' : 'none';
+    difficultyLabel.style.display = singlePlayer ? 'inline-block' : 'none';
+}
 
-        const grid = [];
-
-        for (i = 0; i < row; i++) {
-            grid[i] = [];
-            for (j = 0; j < col; j++) {
-                grid[i][j] = i + ":" + j;
-            }
+function handleClick(e) {
+    if (!gameIsActive) return;
+    const cell = e.target;
+    const index = [...cells].indexOf(cell);
+    if (boardState[index] !== null) return;
+    placeMark(cell, index, currentPlayer);
+    if (checkWin(currentPlayer)) {
+        endGame(false);
+    } else if (isDraw()) {
+        endGame(true);
+    } else {
+        swapTurns();
+        if (singlePlayer && currentPlayer === 'O') {
+            aiMove();
+        } else {
+            setMessage(`Player ${currentPlayer}'s turn`);
         }
-        return ({
-            getGrid: () => grid,
-            getValue: function (row, col) {
-                return grid[row][col];
-            },
-            setValue: function (move, marker) {
-                let row = move.row;
-                let col = move.col;
-                const value = this.getValue(row, col);
-                if (value !== "X" && value !== "O") {
-                    grid[row][col] = marker;
-                    markedCellCount +=1;
-                    if (marker === "X") {
-                        verticleXCheckCounter[col] += 1;
-                        horizontalXCheckCounter[row] += 1;
-                        if (row === col) {
-                            diagonalXCheckCounter[0] += 1;
-                        }
-                        if (row + col === 2) {
-                            diagonalXCheckCounter[1] += 1;
-                        }
-                    }
-                    if (marker === "O") {
-                        verticleOCheckCounter[col] += 1;
-                        horizontalOCheckCounter[row] += 1;
-                        if (row === col) {
-                            diagonalOCheckCounter[0] += 1;
-                        }
-                        if (row + col === 2) {
-                            diagonalOCheckCounter[1] += 1;
-                        }
-                    }
-                    return true;
-                }
-                return false;
-            },
-            getRow: () => row,
-            getColumn: () => col,
+    }
+}
 
-            printGrid: () => {
-                for (i = 0; i < row; i++) {
-                    console.log(grid[i].join("  "));
-                }
-            },
+function placeMark(cell, index, currentPlayer) {
+    boardState[index] = currentPlayer;
+    cell.classList.add(currentPlayer);
+    cell.textContent = currentPlayer;
+}
 
-            getVerticleXCheckCounter: () => verticleXCheckCounter,
-            getVerticleOCheckCounter: () => verticleOCheckCounter,
-            getHorizontalXCheckCounter: () => horizontalXCheckCounter,
-            getHorizontalOCheckCounter: () => horizontalOCheckCounter,
+function swapTurns() {
+    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+}
 
-            getStatus: function () {
-                if (verticleOCheckCounter.includes(3) || verticleXCheckCounter.includes(3)
-                    || horizontalOCheckCounter.includes(3) || horizontalXCheckCounter.includes(3)
-                    || diagonalOCheckCounter.includes(3) || diagonalXCheckCounter.includes(3) || markedCellCount === 9) {
-                    console.log("Game is Over");
-                    return false;
-                }
-                return true;
-            }
+function checkWin(currentPlayer) {
+    return winningCombinations.some(combination => {
+        return combination.every(index => {
+            return boardState[index] === currentPlayer;
         });
-    }();
-
-
-    let isRoundProgress = true;
-
-    while (isRoundProgress) {
-        let userInputFlag = true;
-        let botMoveFlag = true;
-        const playerMarker = playerPlay.marker;
-
-        if (playerPlay.isBot) {
-            while (botMoveFlag) {
-                const move = botMove(board, playerPlay.botLevel, playerMarker);
-                if (board.setValue(move, playerMarker)) {
-                    console.log(`Marking ${move.row}:${move.row} with value: ${playerMarker}`);
-                    botMoveFlag = false;
-                }
-            }
-        }
-        else {
-            while (userInputFlag) {
-                const rawMove = prompt(`Please play your move: ${playerMarker} in [ROW]:[COLUMN] format`);
-                const moves = rawMove === "" ? "0:0".split(":") : rawMove.split(":");
-                const move = createMove(moves[0], moves[1]);
-                if (board.setValue(move, playerMarker)) {
-                    console.log(`Marking ${move.row}:${move.col} with value: ${playerMarker}`);
-                    userInputFlag = false;
-                } else {
-                    prompt(`Could not register value in cell ${move.row}:${move.col} with value: ${playerMarker} because it is already marked. Please try again.`);
-                }
-
-            }
-        }
-
-
-        board.printGrid();
-        isRoundProgress = board.getStatus();
-
-        // Switch players
-        if (isRoundProgress) {
-            playerPlay = (playerPlay === player1) ? player2 : player1;
-        }
-        else {
-            console.log(`Player ${playerMarker} wins, congratulations!!`);
-        }
-    }
-
+    });
 }
 
-function createPlayer(name, marker, isBot, botLevel, roundsWon) {
-    return ({ name: name, marker: marker, isBot: isBot, botLevel: botLevel, roundsWon: roundsWon });
+function isDraw() {
+    return boardState.every(cell => cell !== null);
 }
 
-function createMove(row, col) {
-    return ({ row: row, col: col });
-}
-
-function botMove(board, botLevel, botMarker) {
-    if (botLevel === "EASY") {
-        for (i = 0; i < board.getRow(); i++) {
-            for (j = 0; j < board.getColumn(); j++) {
-                if (board.getValue(i, j) !== "X" && board.getValue(i, j) !== "O") {
-                    return createMove(i, j);
-                }
-            }
-        }
-    }
-    else if (botLevel === "MEDIUM") {
-
-        let oppHorizontalCounter = [0, 0, 0];
-        let oppVerticalCounter = [0, 0, 0];
-
-        if (botMarker === "X") {
-            oppHorizontalCounter = board.getHorizontalOCheckCounter();
-            oppVerticalCounter = board.getVerticleOCheckCounter();
-        }
-        else if (botMarker === "O") {
-            oppHorizontalCounter = board.getHorizontalXCheckCounter();
-            oppVerticalCounter = board.getVerticleXCheckCounter();
-        }
-
-        for (i = 0; i < board.getRow(); i++) {
-            for (j = 0; j < board.getColumn(); j++) {
-                let row = minIndex(oppVerticalCounter.slice(i), i);
-                let col = minIndex(oppHorizontalCounter.slice(j), j);
-                let boardValue = board.getValue(row, col);
-                if (boardValue !== "X" && boardValue !== "O") {
-                    return createMove(row, col);
-                }
-            }
-        }
-        // Fallback
-        for (i = 0; i < board.getRow(); i++) {
-            for (j = 0; j < board.getColumn(); j++) {
-                if (board.getValue(i, j) !== "X" && board.getValue(i, j) !== "O") {
-                    return createMove(i, j);
-                }
-            }
-        }
-
-    }
-    else if (botLevel === "HARD") {
-
+function endGame(draw) {
+    gameIsActive = false;
+    if (draw) {
+        setMessage('Draw!');
+    } else {
+        setMessage(`Player ${currentPlayer} wins!`);
     }
 }
 
-function minIndex(arr, startIndex) {
-    let min = arr[0]
-    let index = startIndex;
-    for (k = 1; k < arr.length; k++) {
-        if (arr[k] < min) {
-            min = arr[k];
-            index = startIndex + k;
-        }
-    }
-    return index;
+function setMessage(message) {
+    messageElement.textContent = message;
 }
 
-const game = gameController();
+function aiMove() {
+    const difficulty = difficultySelect.value;
+    let move;
+    if (difficulty === 'easy') {
+        move = getRandomMove();
+    } else if (difficulty === 'medium') {
+        move = getMediumMove();
+    } else if (difficulty === 'hard') {
+        move = getBestMove();
+    }
+    if (move !== undefined) {
+        placeMark(cells[move], move, currentPlayer);
+        if (checkWin(currentPlayer)) {
+            endGame(false);
+        } else if (isDraw()) {
+            endGame(true);
+        } else {
+            swapTurns();
+            setMessage(`Player ${currentPlayer}'s turn`);
+        }
+    }
+}
+
+function getRandomMove() {
+    const availableMoves = boardState.map((val, idx) => val === null ? idx : null).filter(val => val !== null);
+    return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+}
+
+function getMediumMove() {
+    const opponent = 'X';
+    for (let combo of winningCombinations) {
+        const [a, b, c] = combo;
+        if (boardState[a] === opponent && boardState[b] === opponent && boardState[c] === null) return c;
+        if (boardState[a] === opponent && boardState[c] === opponent && boardState[b] === null) return b;
+        if (boardState[b] === opponent && boardState[c] === opponent && boardState[a] === null) return a;
+    }
+    return getRandomMove();
+}
+
+function getBestMove() {
+    let bestScore = -Infinity;
+    let move;
+    for (let i = 0; i < boardState.length; i++) {
+        if (boardState[i] === null) {
+            boardState[i] = 'O';
+            let score = minimax(boardState, 0, false);
+            boardState[i] = null;
+            if (score > bestScore) {
+                bestScore = score;
+                move = i;
+            }
+        }
+    }
+    return move;
+}
+
+function minimax(board, depth, isMaximizing) {
+    const scores = {
+        'O': 1,
+        'X': -1,
+        'draw': 0
+    };
+    let result = checkWinForMinimax(board);
+    if (result !== null) {
+        return scores[result];
+    }
+    if (isDraw()) {
+        return scores['draw'];
+    }
+
+    if (isMaximizing) {
+        let bestScore = -Infinity;
+        for (let i = 0; i < board.length; i++) {
+            if (board[i] === null) {
+                board[i] = 'O';
+                let score = minimax(board, depth + 1, false);
+                board[i] = null;
+                bestScore = Math.max(score, bestScore);
+            }
+        }
+        return bestScore;
+    } else {
+        let bestScore = Infinity;
+        for (let i = 0; i < board.length; i++) {
+            if (board[i] === null) {
+                board[i] = 'X';
+                let score = minimax(board, depth + 1, true);
+                board[i] = null;
+                bestScore = Math.min(score, bestScore);
+            }
+        }
+        return bestScore;
+    }
+}
+
+function checkWinForMinimax(board) {
+    for (let combo of winningCombinations) {
+        const [a, b, c] = combo;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+            return board[a];
+        }
+    }
+    return null;
+}
+
+function changeMode() {
+    startGame();
+}
