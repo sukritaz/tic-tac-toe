@@ -15,7 +15,7 @@
 }
 
 .dark-mode {
-    --page-background: #1E1E1E;
+    --page-background: #0C0C0C;
     --highlight-color: #FFFF00;
     --base-color: #2F2F2F;
     --secondary-color: #706E6E;
@@ -90,10 +90,6 @@ button:hover {
 
 #mode-toggle-button svg {
     fill: var(--highlight-color);
-}
-
-#mode-toggle-button svg:last-child {
-    display: none;
 }
 
 main {
