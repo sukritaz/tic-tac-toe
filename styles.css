@@ -1,60 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=Itim&display=swap');
+
+:root {
+    --page-background: #ffffff;
+    --highlight-color: black;
+    --base-color: #F3F3F3;
+    --secondary-color: #706E6E;
+    --primary-font-size: 32px;
+    --header-font-size: 64px;
+    --header-button-height: 5vh;
+    --header-button-min-height: 50px;
+    --header-height: 10vh;
+    --header-min-height: 100px;
+    --header-button-margin: 25px;
+}
+
+.dark-mode {
+    --page-background: #0C0C0C;
+    --highlight-color: #FFFF00;
+    --base-color: #2F2F2F;
+    --secondary-color: #706E6E;
+    --primary-font-size: 32px;
+    --header-font-size: 64px;
+    --header-button-height: 5vh;
+    --header-button-min-height: 50px;
+    --header-height: 10vh;
+    --header-min-height: 100px;
+    --header-button-margin: 25px;
+}
+
 body {
-    font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    align-items: stretch;
+    font-family: "Itim", cursive;
+    font-weight: 400;
+    font-style: normal;
     height: 100vh;
-    background-color: #f0f0f0;
-    margin: 0;
+    background-color: var(--page-background);
+    text-shadow: 2px 3px 4px rgba(0, 0, 0, 0.3);
 }
 
-h1 {
-    margin-bottom: 20px;
-}
-
-.controls {
-    margin-bottom: 20px;
+header {
     display: flex;
-    gap: 10px;
-}
-
-label {
-    margin-right: 10px;
-}
-
-select {
-    padding: 5px;
-    font-size: 16px;
-}
-
-#board {
-    display: grid;
-    grid-template-columns: repeat(3, 100px);
-    grid-template-rows: repeat(3, 100px);
-    gap: 5px;
-    margin-bottom: 20px;
-}
-
-.cell {
-    width: 100px;
-    height: 100px;
-    display: flex;
+    position:relative;
     align-items: center;
-    justify-content: center;
-    background-color: #fff;
-    border: 2px solid #000;
-    font-size: 24px;
-    cursor: pointer;
+    justify-content: space-between;
+    height: var(--header-height);
+    min-height: var(--header-min-height);
 }
 
-#message {
-    margin-bottom: 20px;
-    font-size: 18px;
+button {
+    font-family: inherit;
+    background-color: var(--base-color);
 }
 
-#restartButton {
+button:hover {
+    transform: scale(1.05);
+    transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+#restart-button {
+    display: flex;
+    border: none;
+    border-radius: 40px;
     padding: 10px 20px;
-    font-size: 16px;
+    font-size: var(--primary-font-size);
+    height: var(--header-button-height);
+    min-height: var(--header-button-min-height);
+    margin-left: var(--header-button-margin);
+    justify-content: center;
+    align-items: center;
+    color: var(--highlight-color);
+}
+
+#mode-toggle-button {
+    display: flex;
+    margin-right: var(--header-button-margin);
+    border: none;
+    border-radius: 50%;
+    padding: 10px;
+    font-size: var(--primary-font-size);
+    height: var(--header-button-height);
+    min-height: var(--header-button-min-height);
+    min-width: var(--header-button-min-height);
+    width: var(--header-button-height);
+    justify-content: center;
+    align-items: center;
+}
+
+#mode-toggle-button svg {
+    fill: var(--highlight-color);
+}
+
+main {
+    display: flex;
+    flex: 1;
+    position: relative;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+}
+
+main h1 {
+    flex: 0;
+    font-size: var(--header-font-size);
+    color: var(--highlight-color);
+    position: absolute;
+    top: 0px;
+    margin-top: 0px;
+}
+
+#game-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 10px;
+    width: 90%;
+    max-width: 600px;
+    height: 70%;
+    max-height: 500px;
+}
+
+.game-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 64px;
+    background-color: var(--base-color);
+    border-radius: 10px;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
     cursor: pointer;
+    color: var(--highlight-color);
+}
+
+.game-cell:hover {
+    transform: scale(1.05);
+    transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+#player-prompt {
+    display: flex;
+    font-size: var(--primary-font-size);
+    color: var(--secondary-color);
+    margin-top: 30px;
+    padding: 10px 20px;
 }
