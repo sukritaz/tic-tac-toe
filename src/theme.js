@@ -1,4 +1,4 @@
-import { modeToggleButton, body, lightModeIcon, darkModeIcon } from "./domElements.js";
+import { modeToggleButton, body, lightModeIcon, darkModeIcon } from "./constants/domElements.js";
 
 const bodyClassList = body.classList;
 

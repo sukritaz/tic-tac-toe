@@ -131,6 +131,7 @@ main h1 {
     border-radius: 10px;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
     cursor: pointer;
+    color: var(--highlight-color);
 }
 
 .game-cell:hover {
@@ -138,7 +139,7 @@ main h1 {
     transition: transform 0.6s ease, opacity 0.6s ease;
 }
 
-#player-turn {
+#player-prompt {
     display: flex;
     font-size: var(--primary-font-size);
     color: var(--secondary-color);
